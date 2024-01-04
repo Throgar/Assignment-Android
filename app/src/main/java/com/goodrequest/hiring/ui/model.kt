@@ -1,6 +1,5 @@
 package com.goodrequest.hiring.ui
 
-import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.goodrequest.hiring.PokemonApi
@@ -9,7 +8,6 @@ import kotlinx.coroutines.launch
 
 class PokemonViewModel(
     state: SavedStateHandle,
-    private val context: Context?,
     private val api: PokemonApi) : ViewModel() {
 
     val pokemons = state.getLiveData<Result<List<Pokemon>>?>("pokemons", null)
