@@ -36,5 +36,7 @@ class Item(view: View): RecyclerView.ViewHolder(view) {
             placeholder(R.drawable.ic_launcher_foreground)
         }
         ui.name.text = pokemon.name
+        ui.move.text = pokemon.detail?.move
+        ui.weight.text = pokemon.detail?.weight.toString()
     }
 }

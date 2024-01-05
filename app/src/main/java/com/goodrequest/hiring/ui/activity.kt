@@ -15,6 +15,7 @@ class PokemonActivity: ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val vm by viewModel { PokemonViewModel(it, PokemonApi) }
+        val adapter = PokemonAdapter()
         vm.pokemons.value ?: vm.load()
 
         ActivityBinding.inflate(layoutInflater).run {
@@ -31,14 +32,15 @@ class PokemonActivity: ComponentActivity() {
                         loading.visibility = GONE
                         refresh.isRefreshing = false
                         failure.visibility = GONE
-                        val adapter = PokemonAdapter()
                         items.adapter = adapter
                         adapter.show(pokemons)
                     },
                     onFailure = {
                         refresh.isRefreshing = false
                         loading.visibility = GONE
-                        failure.visibility = VISIBLE
+                        adapter.takeIf { it.itemCount == 0 }?.let {
+                            failure.visibility = VISIBLE
+                        }
 
                         Toast.makeText(
                             baseContext,

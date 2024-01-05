@@ -3,6 +3,7 @@ package com.goodrequest.hiring.ui
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.goodrequest.hiring.PokemonApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -13,8 +14,15 @@ class PokemonViewModel(
     val pokemons = state.getLiveData<Result<List<Pokemon>>?>("pokemons", null)
 
     fun load() {
-        GlobalScope.launch {
+        GlobalScope.launch(Dispatchers.IO) {
             val result = api.getPokemons(page = 1)
+            result.map { pokemons ->
+                pokemons.map { pokemon ->
+                    val detail = api.getPokemonDetail(pokemon).getOrNull()
+//                    detail?.let { pokemon.copy(detail = it) }
+                    pokemon.detail = detail
+                }
+            }
             pokemons.postValue(result)
         }
     }
@@ -23,7 +31,7 @@ class PokemonViewModel(
 data class Pokemon(
     val id     : String,
     val name   : String,
-    val detail : PokemonDetail? = null)
+    var detail : PokemonDetail? = null)
 
 data class PokemonDetail(
     val image  : String,
