@@ -13,9 +13,9 @@ class PokemonViewModel(
 
     val pokemons = state.getLiveData<Result<List<Pokemon>>?>("pokemons", null)
 
-    fun load() {
+    fun load(page: Int) {
         GlobalScope.launch(Dispatchers.IO) {
-            val result = api.getPokemons(page = 1)
+            val result = api.getPokemons(page = page)
             result.map { pokemons ->
                 pokemons.map { pokemon ->
                     val detail = api.getPokemonDetail(pokemon).getOrNull()

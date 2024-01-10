@@ -5,7 +5,9 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.core.view.size
 import androidx.lifecycle.*
+import androidx.recyclerview.widget.RecyclerView
 import com.goodrequest.hiring.PokemonApi
 import com.goodrequest.hiring.databinding.ActivityBinding
 
@@ -16,13 +18,18 @@ class PokemonActivity: ComponentActivity() {
 
         val vm by viewModel { PokemonViewModel(it, PokemonApi) }
         val adapter = PokemonAdapter()
-        vm.pokemons.value ?: vm.load()
+        var page = 1
+        vm.pokemons.value ?: vm.load(page)
 
         ActivityBinding.inflate(layoutInflater).run {
             setContentView(root)
-            refresh.setOnRefreshListener { vm.load() }
+            refresh.setOnRefreshListener {
+                page = 1
+                vm.load(page)
+            }
             retry.setOnClickListener {
-                vm.load()
+                page = 1
+                vm.load(page)
                 loading.visibility = VISIBLE
             }
 
@@ -33,7 +40,19 @@ class PokemonActivity: ComponentActivity() {
                         refresh.isRefreshing = false
                         failure.visibility = GONE
                         items.adapter = adapter
-                        adapter.show(pokemons)
+                        Toast.makeText(
+                            baseContext,
+                            "List sized: ${items.size}, page: ${page}",
+                            Toast.LENGTH_LONG).show()
+
+                        val combinedPokemons: List<Any> = (adapter.getItems()
+                                + pokemons
+                                + List(1) {""}
+                                )
+
+
+                        adapter.show(combinedPokemons)
+
                     },
                     onFailure = {
                         refresh.isRefreshing = false
@@ -49,7 +68,19 @@ class PokemonActivity: ComponentActivity() {
                     }
                 )
             }
+
+            items.addOnScrollListener(object: RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (!items.canScrollVertically(1)) {
+//                        adapter.show(adapter.getItems() + List(1) {""})
+                        vm.load(page++)
+                    }
+                }
+            })
+
         }
+
     }
 }
 
